@@ -13,6 +13,7 @@ namespace Gamee\RabbitMQ\Consumer;
 use Bunny\Channel;
 use Bunny\Client;
 use Bunny\Message;
+use Gamee\RabbitMQ\Console\ConsoleParameters;
 use Gamee\RabbitMQ\Queue\Queue;
 
 final class Consumer
@@ -33,12 +34,18 @@ final class Consumer
 	 */
 	private $callback;
 
+	/**
+	 * @var callable
+	 */
+	private $setUpMethod;
 
-	public function __construct(string $name, Queue $queue, callable $callback)
+
+	public function __construct(string $name, Queue $queue, callable $callback, callable $setUpMethod)
 	{
 		$this->name = $name;
 		$this->queue = $queue;
 		$this->callback = $callback;
+		$this->setUpMethod = $setUpMethod;
 	}
 
 
@@ -51,6 +58,14 @@ final class Consumer
 	public function getCallback(): callable
 	{
 		return $this->callback;
+	}
+
+
+	public function callSetUpMethod(ConsoleParameters $params): void
+	{
+		if ($this->setUpMethod !== null) {
+			call_user_func($this->setUpMethod, $params);
+		}
 	}
 
 

@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace Gamee\RabbitMQ\Console\Command;
 
+use Gamee\RabbitMQ\Console\ConsoleParameters;
 use Gamee\RabbitMQ\Consumer\ConsumerFactory;
 use Gamee\RabbitMQ\Consumer\ConsumersDataBag;
 use Gamee\RabbitMQ\Consumer\Exception\ConsumerFactoryException;
@@ -56,6 +57,27 @@ abstract class AbstractConsumerCommand extends Command
 				)
 			);
 		}
+	}
+
+
+	/**
+	 * @throws \InvalidArgumentException
+	 */
+	protected function processConsoleParameters(array $params): ConsoleParameters
+	{
+		$map = [];
+		foreach ($params as $param) {
+			$delimiterPos = strpos($param, '=');
+			if ($delimiterPos === false) {
+				throw new \InvalidArgumentException("Optional parameter [$param] has invalid format. \n\n Should be key=value.");
+			}
+
+			$key = substr($param, 0, $delimiterPos);
+			$value = substr($param, $delimiterPos + 1);
+
+			$map[$key] = $value;
+		}
+		return new ConsoleParameters($map);
 	}
 
 }

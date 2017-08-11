@@ -73,7 +73,12 @@ final class ConsumerFactory
 			throw new ConsumerFactoryException("Consumer [$name] has invalid callback");
 		}
 
-		return new Consumer($name, $queue, $consumerData['callback']);
+		$setUpMethod = $consumerData['setup'];
+		if ($setUpMethod !== null && !is_callable($setUpMethod)) {
+			throw new ConsumerFactoryException("Consumer [$name] has invalid setup method");
+		}
+
+		return new Consumer($name, $queue, $consumerData['callback'], $setUpMethod);
 	}
 
 }
