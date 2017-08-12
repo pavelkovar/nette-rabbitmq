@@ -12,6 +12,7 @@ namespace Gamee\RabbitMQ\Console\Command;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 final class ConsumerCommand extends AbstractConsumerCommand
@@ -27,6 +28,7 @@ final class ConsumerCommand extends AbstractConsumerCommand
 
 		$this->addArgument('consumerName', InputArgument::REQUIRED, 'Name of the consumer');
 		$this->addArgument('secondsToLive', InputArgument::REQUIRED, 'Max seconds for consumer to run');
+		$this->addOption('parameter', 'p', InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'Additional consumer parameters. Valid argument syntax is key=value', []);
 	}
 
 
@@ -37,11 +39,14 @@ final class ConsumerCommand extends AbstractConsumerCommand
 	{
 		$consumerName = (string) $input->getArgument('consumerName');
 		$secondsToLive = (int) $input->getArgument('secondsToLive');
+		$parameters = (array) $input->getOption('parameter');
 
 		$this->validateConsumerName($consumerName);
 		$this->validateSecondsToRun($secondsToLive);
+		$parameters = $this->processConsoleParameters($parameters);
 
 		$consumer = $this->consumerFactory->getConsumer($consumerName);
+		$consumer->callSetUpMethod($parameters);
 		$consumer->consume($secondsToLive);
 	}
 

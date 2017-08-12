@@ -12,6 +12,7 @@ namespace Gamee\RabbitMQ\Console\Command;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 final class StaticConsumerCommand extends AbstractConsumerCommand
@@ -27,6 +28,7 @@ final class StaticConsumerCommand extends AbstractConsumerCommand
 
 		$this->addArgument('consumerName', InputArgument::REQUIRED, 'Name of the consumer');
 		$this->addArgument('amountOfMessages', InputArgument::REQUIRED, 'Amount of messages to consume');
+		$this->addOption('parameter', 'p', InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'Additional consumer parameters. Valid argument syntax is key=value', []);
 	}
 
 
@@ -37,11 +39,14 @@ final class StaticConsumerCommand extends AbstractConsumerCommand
 	{
 		$consumerName = (string) $input->getArgument('consumerName');
 		$amountOfMessages = (int) $input->getArgument('amountOfMessages');
+		$parameters = (array) $input->getOption('parameter');
 
 		$this->validateConsumerName($consumerName);
 		$this->validateAmountOfMessages($amountOfMessages);
+		$parameters = $this->processConsoleParameters($parameters);
 
 		$consumer = $this->consumerFactory->getConsumer($consumerName);
+		$consumer->callSetUpMethod($parameters);
 		$consumer->consume(null, $amountOfMessages);
 	}
 
