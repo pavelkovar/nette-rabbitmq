@@ -40,16 +40,34 @@ final class Consumer
 	private $messages = 0;
 
 	/**
+	 * @var int|null
+	 */
+	private $prefetchSize;
+
+	/**
+	 * @var int|null
+	 */
+	private $prefetchCount;
+
+	/**
 	 * @var callable
 	 */
 	private $setUpMethod;
 
 
-	public function __construct(string $name, Queue $queue, callable $callback, callable $setUpMethod)
-	{
+	public function __construct(
+		string $name,
+		Queue $queue,
+		callable $callback,
+		?int $prefetchSize,
+		?int $prefetchCount,
+        callable $setUpMethod
+	) {
 		$this->name = $name;
 		$this->queue = $queue;
 		$this->callback = $callback;
+		$this->prefetchSize = $prefetchSize;
+		$this->prefetchCount = $prefetchCount;
 		$this->setUpMethod = $setUpMethod;
 	}
 
@@ -78,7 +96,13 @@ final class Consumer
 	{
 		$bunnyClient = $this->queue->getConnection()->getBunnyClient();
 
-		$bunnyClient->channel()->consume(
+		$channel = $bunnyClient->channel();
+
+		if ($this->prefetchSize !== null || $this->prefetchCount !== null) {
+			$channel->qos($this->prefetchSize, $this->prefetchCount);
+		}
+
+		$channel->consume(
 			function (Message $message, Channel $channel, Client $client) use ($maxMessages): void {
 				$result = call_user_func($this->callback, $message);
 

@@ -73,12 +73,29 @@ final class ConsumerFactory
 			throw new ConsumerFactoryException("Consumer [$name] has invalid callback");
 		}
 
-		$setUpMethod = $consumerData['setup'];
-		if ($setUpMethod !== null && !is_callable($setUpMethod)) {
-			throw new ConsumerFactoryException("Consumer [$name] has invalid setup method");
+		$prefetchSize = null;
+		$prefetchCount = null;
+
+		if ($consumerData['qos']['prefetchSize'] !== null) {
+			$prefetchSize = $consumerData['qos']['prefetchSize'];
 		}
 
-		return new Consumer($name, $queue, $consumerData['callback'], $setUpMethod);
-	}
+		if ($consumerData['qos']['prefetchCount'] !== null) {
+			$prefetchCount = $consumerData['qos']['prefetchCount'];
+		}
 
+        $setUpMethod = $consumerData['setup'];
+        if ($setUpMethod !== null && !is_callable($setUpMethod)) {
+            throw new ConsumerFactoryException("Consumer [$name] has invalid setup method");
+        }
+
+		return new Consumer(
+			$name,
+			$queue,
+			$consumerData['callback'],
+			$prefetchSize,
+			$prefetchCount,
+            $setUpMethod
+		);
+	}
 }

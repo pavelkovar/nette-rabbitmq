@@ -27,6 +27,8 @@ final class ConnectionsHelper extends AbstractHelper
 		'user' => 'guest',
 		'password' => 'guest',
 		'vhost' => '/',
+		'timeout' => 1,
+		'heartbeat' => 60.0,
 	];
 
 
@@ -42,11 +44,11 @@ final class ConnectionsHelper extends AbstractHelper
 		}
 
 		$connectionsDataBag = $builder->addDefinition($this->extension->prefix('connectionsDataBag'))
-			->setClass(ConnectionsDataBag::class)
+			->setFactory(ConnectionsDataBag::class)
 			->setArguments([$connectionsConfig]);
 
 		return $builder->addDefinition($this->extension->prefix('connectionFactory'))
-			->setClass(ConnectionFactory::class)
+			->setFactory(ConnectionFactory::class)
 			->setArguments([$connectionsDataBag]);
 	}
 

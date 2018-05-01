@@ -58,9 +58,14 @@ rabbitmq:
 		testConsumer:
 			queue: testQueue
 			callback: [@TestConsumer, consume]
+			qos:
+				prefetchSize: 0
+				prefetchCount: 5
 ```
 
 ### Publishing messages
+
+Note: Queue will be created automatically after publishing first message. 
 
 services.neon:
 

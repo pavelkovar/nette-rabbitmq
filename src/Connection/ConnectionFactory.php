@@ -65,10 +65,12 @@ final class ConnectionFactory
 
 		return new Connection(
 			$connectionData['host'],
-			$connectionData['port'],
+			(int) $connectionData['port'],
 			$connectionData['user'],
 			$connectionData['password'],
-			$connectionData['vhost']
+			$connectionData['vhost'],
+			(float) $connectionData['heartbeat'],
+			(float) $connectionData['timeout']
 		);
 	}
 

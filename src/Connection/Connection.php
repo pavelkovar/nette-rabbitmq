@@ -10,15 +10,23 @@ declare(strict_types=1);
 
 namespace Gamee\RabbitMQ\Connection;
 
-use Bunny;
+use Bunny\Channel;
+use Bunny\Client;
+use Bunny\Exception\ClientException;
+use Gamee\RabbitMQ\Connection\Exception\ConnectionException;
 
 final class Connection
 {
 
 	/**
-	 * @var Bunny\Client
+	 * @var Client
 	 */
 	private $bunnyClient;
+
+	/**
+	 * @var array
+	 */
+	private $connectionParams;
 
 
 	public function __construct(
@@ -26,35 +34,51 @@ final class Connection
 		int $port,
 		string $user,
 		string $password,
-		string $vhost
+		string $vhost,
+		float $heartbeat,
+		float $timeout
 	) {
-		$this->host = $host;
-		$this->port = $port;
-		$this->user = $user;
-		$this->password = $password;
-		$this->vhost = $vhost;
+		$this->connectionParams = [
+			'host' => $host,
+			'port' => $port,
+			'user' => $user,
+			'password' => $password,
+			'vhost' => $vhost,
+			'heartbeat' => $heartbeat,
+			'timeout' => $timeout,
+		];
 
-		$this->bunnyClient = new Bunny\Client([
-			'host' => $this->host,
-			'port' => $this->port,
-			'user' => $this->user,
-			'password' => $this->password,
-			'vhost' => $this->vhost,
-		]);
+		$this->bunnyClient = $this->createNewConnection();
 
 		$this->bunnyClient->connect();
 	}
 
 
-	public function getBunnyClient(): Bunny\Client
+	public function getBunnyClient(): Client
 	{
 		return $this->bunnyClient;
 	}
 
 
-	public function getChannel(): Bunny\Channel
+	/**
+	 * @throws ConnectionException
+	 */
+	public function getChannel(): Channel
 	{
-		return $this->bunnyClient->channel();
+		try {
+			return $this->bunnyClient->channel();
+		} catch (ClientException $e) {
+			if ($e->getMessage() !== 'Broken pipe or closed connection.') {
+				throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
+			}
+
+			/**
+			 * Try to reconnect
+			 */
+			$this->bunnyClient = $this->createNewConnection();
+
+			return $this->bunnyClient->channel();
+		}
 	}
 
 
@@ -63,4 +87,9 @@ final class Connection
 		$this->bunnyClient->disconnect();
 	}
 
+
+	private function createNewConnection(): Client
+	{
+		return new Client($this->connectionParams);
+	}
 }

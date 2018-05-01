@@ -26,12 +26,10 @@ final class ConsumersHelper extends AbstractHelper
 		'setup' => null,
 		'callback' => null,
 		'idleTimeout' => 30,
-
-	/**
-	 * @todo
-	 * 
-	 * 	qos: {prefetchSize: 0, prefetchCount: 5} ?
-	 */
+		'qos' => [
+			'prefetchSize' => null, // 0
+			'prefetchCount' =>  null, // 50
+		],
 	];
 
 
@@ -55,11 +53,11 @@ final class ConsumersHelper extends AbstractHelper
 		}
 
 		$consumersDataBag = $builder->addDefinition($this->extension->prefix('consumersDataBag'))
-			->setClass(ConsumersDataBag::class)
+			->setFactory(ConsumersDataBag::class)
 			->setArguments([$consumersConfig]);
 
 		return $builder->addDefinition($this->extension->prefix('consumerFactory'))
-			->setClass(ConsumerFactory::class)
+			->setFactory(ConsumerFactory::class)
 			->setArguments([$consumersDataBag]);
 	}
 

@@ -44,11 +44,11 @@ final class QueuesHelper extends AbstractHelper
 		}
 
 		$queuesDataBag = $builder->addDefinition($this->extension->prefix('queuesDataBag'))
-			->setClass(QueuesDataBag::class)
+			->setFactory(QueuesDataBag::class)
 			->setArguments([$queuesConfig]);
 
 		return $builder->addDefinition($this->extension->prefix('queueFactory'))
-			->setClass(QueueFactory::class)
+			->setFactory(QueueFactory::class)
 			->setArguments([$queuesDataBag]);
 	}
 
